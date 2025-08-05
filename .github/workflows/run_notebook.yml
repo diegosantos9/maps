@@ -36,15 +36,22 @@ jobs:
           pip install cloudscraper beautifulsoup4 openpyxl geopy folium tqdm
 
       # 4. Executa o notebook usando Papermill
-      #    !!! IMPORTANTE: Troque 'SEU-NOTEBOOK.ipynb' pelo nome exato do seu arquivo .ipynb !!!
+      #    AQUI ESTAVA O ERRO: Corrigido o nome do arquivo de hífens para underscores
       - name: Executar o Notebook
-        run: papermill 'OK-MAPA-Gyn-e-Ap-Gyn.ipynb' saida.ipynb
+        run: papermill 'OK_MAPA_Gyn_e_Ap_Gyn.ipynb' saida.ipynb
 
       # 5. Salva os arquivos gerados (mapa e excel) de volta no repositório
+      #    Etapa melhorada para ser mais robusta
       - name: Fazer commit dos resultados
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add mapa_leiloes_goias.html imoveis_consolidados.xlsx saida.ipynb
+          
+          # Adiciona os arquivos de resultado apenas se eles existirem
+          git add saida.ipynb
+          if [ -f mapa_leiloes_goias.html ]; then git add mapa_leiloes_goias.html; fi
+          if [ -f imoveis_consolidados.xlsx ]; then git add imoveis_consolidados.xlsx; fi
+          
           # Faz o commit apenas se houver alguma alteração nos arquivos
+          # e depois faz o push para o repositório
           git diff --quiet && git diff --staged --quiet || (git commit -m "🗺️ Atualiza mapa e dados de leilões" && git push)
