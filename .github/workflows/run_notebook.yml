@@ -1,0 +1,50 @@
+# Nome do Workflow - Aparecerá na aba "Actions" do GitHub
+name: Executar Script de Leilões Diariamente
+
+# Gatilhos (Triggers) - Quando a automação deve rodar
+on:
+  # Permite que você inicie a automação manualmente pela aba Actions
+  workflow_dispatch:
+
+  # Agenda a execução automática
+  schedule:
+    # Executa todo dia às 03:00 UTC (meia-noite no horário de Brasília, UTC-3)
+    # Você pode ajustar o horário usando o formato CRON.
+    - cron: '0 3 * * *'
+
+# Tarefas (Jobs) - O que a automação vai fazer
+jobs:
+  executar-notebook:
+    # Usa a versão mais recente do Ubuntu como sistema operacional
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Clona seu repositório para a máquina virtual da Action
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 2. Configura o ambiente Python
+      - name: Configurar Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 3. Instala todas as bibliotecas que seu script usa
+      - name: Instalar dependências
+        run: |
+          pip install jupyter pandas papermill
+          pip install cloudscraper beautifulsoup4 openpyxl geopy folium tqdm
+
+      # 4. Executa o notebook usando Papermill
+      #    !!! IMPORTANTE: Troque 'SEU-NOTEBOOK.ipynb' pelo nome exato do seu arquivo .ipynb !!!
+      - name: Executar o Notebook
+        run: papermill 'OK-MAPA-Gyn-e-Ap-Gyn.ipynb' saida.ipynb
+
+      # 5. Salva os arquivos gerados (mapa e excel) de volta no repositório
+      - name: Fazer commit dos resultados
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add mapa_leiloes_goias.html imoveis_consolidados.xlsx saida.ipynb
+          # Faz o commit apenas se houver alguma alteração nos arquivos
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🗺️ Atualiza mapa e dados de leilões" && git push)
