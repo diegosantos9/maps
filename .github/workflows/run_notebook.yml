@@ -8,9 +8,7 @@ on:
 
   # Agenda a execução automática
   schedule:
-    # Executa todo dia às 03:00 UTC (meia-noite no horário de Brasília, UTC-3)
-    # Você pode ajustar o horário usando o formato CRON.
-    - cron: '0 3 * * *'
+   
 
 # Tarefas (Jobs) - O que a automação vai fazer
 jobs:
